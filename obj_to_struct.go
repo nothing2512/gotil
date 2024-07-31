@@ -12,39 +12,66 @@ import (
 // obj : *struct
 // data : JSON
 // tag : tagname (optional / "")
-func ParseStruct(obj any, data any, tag string) {
+func ParseStruct(obj any, data any, tag string) error {
 	_v := reflect.ValueOf(obj)
 	_t := reflect.New(_v.Type().Elem()).Elem().Type()
 
 	if _t.Kind() == reflect.Map {
-		b, _ := json.Marshal(data)
-		_ = json.Unmarshal(b, _v.Elem().Addr().Interface())
-		return
+		b, err := json.Marshal(data)
+		if err != nil {
+			return err
+		}
+		return json.Unmarshal(b, _v.Elem().Addr().Interface())
 	}
 
 	if _t.Kind() == reflect.Slice {
 		var temp []any
-		b, _ := json.Marshal(data)
-		_ = json.Unmarshal(b, &temp)
+		b, err := json.Marshal(data)
+
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(b, &temp)
+		if err != nil {
+			return err
+		}
+
 		var slice []any
 		for _, x := range temp {
 			__t := reflect.New(_v.Type().Elem().Elem())
 			_n := __t.Interface()
 			if reflect.TypeOf(x).Kind() == reflect.Ptr || reflect.TypeOf(x).Kind() == reflect.Map {
-				ParseStruct(_n, x, tag)
+				err = ParseStruct(_n, x, tag)
+				if err != nil {
+					return err
+				}
 				slice = append(slice, _n)
 			} else {
 				slice = append(slice, x)
 			}
 		}
-		b, _ = json.Marshal(slice)
-		_ = json.Unmarshal(b, _v.Elem().Addr().Interface())
-		return
+		b, err = json.Marshal(slice)
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(b, _v.Elem().Addr().Interface())
+		if err != nil {
+			return err
+		}
 	}
 
 	var temp JSON
-	b, _ := json.Marshal(data)
-	_ = json.Unmarshal(b, &temp)
+	b, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(b, &temp)
+	if err != nil {
+		return err
+	}
 
 	if _t.Kind() == reflect.Ptr {
 		_t = _t.Elem()
@@ -74,8 +101,15 @@ func ParseStruct(obj any, data any, tag string) {
 
 		vField := _v.Elem().Field(i)
 		if vField.Kind() == reflect.Struct {
-			bd, _ := json.Marshal(temp)
-			_ = json.Unmarshal(bd, vField.Addr().Interface())
+			bd, err := json.Marshal(temp)
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(bd, vField.Addr().Interface())
+			if err != nil {
+				return err
+			}
 		}
 
 		for k, v := range temp {
@@ -84,13 +118,19 @@ func ParseStruct(obj any, data any, tag string) {
 			}
 			if k == key && vField.CanSet() {
 				if serialize {
-					_ = json.Unmarshal([]byte(fmt.Sprintf("%v", v)), vField.Addr().Interface())
+					err = json.Unmarshal([]byte(fmt.Sprintf("%v", v)), vField.Addr().Interface())
+					if err != nil {
+						return err
+					}
 				} else {
 					if vField.Kind() == reflect.Int {
 						if reflect.TypeOf(v).Kind() == reflect.Float64 {
 							v = int(v.(float64))
 						}
-						v, _ = strconv.Atoi(fmt.Sprintf("%v", v))
+						v, err = strconv.Atoi(fmt.Sprintf("%v", v))
+						if err != nil {
+							return err
+						}
 					}
 
 					if vField.Kind() == reflect.String {
@@ -100,7 +140,10 @@ func ParseStruct(obj any, data any, tag string) {
 					_i := 0
 					_s := ""
 					if vField.Type() == reflect.TypeOf(&_i) {
-						xv, _ := strconv.Atoi(fmt.Sprintf("%v", v))
+						xv, err := strconv.Atoi(fmt.Sprintf("%v", v))
+						if err != nil {
+							return err
+						}
 						vField.Set(reflect.ValueOf(&xv))
 					} else if vField.Type() == reflect.TypeOf(&_s) {
 						xv := fmt.Sprintf("%v", v)
@@ -145,4 +188,5 @@ func ParseStruct(obj any, data any, tag string) {
 		}
 		i++
 	}
+	return nil
 }

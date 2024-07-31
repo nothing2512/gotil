@@ -9,12 +9,15 @@ go get -u github.com/nothing2512/gotil
 ## Features
 - Elastic Search
 - Encryption
+- File Uploader
 - HTTP Fetch
 - Mailer
 - Object To Struct
+- Parse Csv File to Struct
+- Parse Excel File to Struct
+- Parse JSON File to Struct
 - PIN Generator
 - RabbitMQ
-- File Uploader
 - UUID Generator
 
 ## Example Object to Struct
