@@ -161,8 +161,16 @@ func (s *WebSocket) send(m WebSocketMessage) {
 	}
 }
 
+// Server Send Reply Message
+func (s *WebSocket) Reply(m WebSocketMessage, message string) error {
+	m.Command = "reply"
+	m.Message = message
+	s.send(m)
+	return nil
+}
+
 // Server Blast Message
-func (s *WebSocket) blast(m string) error {
+func (s *WebSocket) Blast(m string) error {
 	b, err := json.Marshal(WebSocketMessage{
 		Command: "blast",
 		Message: m,
@@ -299,12 +307,10 @@ func main() {
 		fmt.Println(m.Command, m.Message)
 
 		// Server Send Reply Message
-		m.Command = "reply"
-		m.Message = "message"
-		ws.send(m)
+		ws.Reply(m, "Reply Message")
 
 		// Server blast to all connection
-		ws.blast("message")
+		ws.Blast("message")
 	})
 
 	// Start Server
