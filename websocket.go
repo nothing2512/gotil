@@ -100,8 +100,8 @@ func (s *WebSocket) Server(secret, iv string) error {
 					if s.handle != nil {
 						var cmd WebSocketMessage
 						_ = json.Unmarshal([]byte(m.Message), &cmd)
-						cmd.Token = s.token
-						cmd.To = s.encryption.Decrypt(cmd.Token)
+						cmd.Token = m.Token
+						cmd.To = s.encryption.Decrypt(m.Token)
 						s.handle(cmd)
 					}
 				}
@@ -165,6 +165,11 @@ func (s *WebSocket) send(m WebSocketMessage) {
 func (s *WebSocket) Reply(m WebSocketMessage, message string) error {
 	m.Command = "reply"
 	m.Message = message
+	b, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	m.Message = string(b)
 	s.send(m)
 	return nil
 }
@@ -268,7 +273,11 @@ func (s *WebSocket) Command(data WebSocketMessage) error {
 // Client On Message Received
 func (s *WebSocket) OnMessage(handle func(m WebSocketMessage)) {
 	for {
-		_, message, _ := s.connection.ReadMessage()
+		_, message, err := s.connection.ReadMessage()
+		if err != nil {
+			s.connected = false
+			return
+		}
 		var m WebSocketMessage
 		_ = json.Unmarshal(message, &m)
 		handle(m)
