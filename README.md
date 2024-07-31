@@ -19,6 +19,7 @@ go get -u github.com/nothing2512/gotil
 - PIN Generator
 - RabbitMQ
 - UUID Generator
+- WebSocket
 
 ## Example Object to Struct
 ```go
@@ -168,5 +169,72 @@ func main() {
 	}
 	err := f.fetch(&data)
 }
+```
 
+## Example Web Socket
+```go
+// server.go
+package main
+
+import (
+	"fmt"
+
+	"github.com/nothing2512/gotil"
+)
+
+func main() {
+	ws := gotil.NewWebSocket("0.0.0.0:8080")
+
+	// Server Handle Incoming Command
+	ws.OnCommand(func(m gotil.WebSocketMessage) {
+		fmt.Println(m.Command, m.Message)
+
+		// Server Send Reply Message
+		ws.Reply(m, "Reply Message")
+
+		// Server blast to all connection
+		ws.Blast("Blast Message")
+	})
+
+	// Start Server
+	err := ws.Server("00000000000000000000000000000000", "1111111111111111")
+	if err != nil {
+		panic(err)
+	}
+}
+```
+
+```go
+// client.go
+package main
+
+import (
+	"fmt"
+
+	"github.com/nothing2512/gotil"
+)
+
+func main() {
+	ws := gotil.NewWebSocket("0.0.0.0:8080")
+
+	// Start Client
+	err := ws.Client()
+	if err != nil {
+		panic(err)
+	}
+
+	// Client Handle Incoming Message
+	ws.OnMessage(func(m gotil.WebSocketMessage) {
+		fmt.Println(m.Message)
+	})
+
+	// Client Send Message To Other Client
+	ws.Send("target-uid", "Hello")
+
+	// Client Send Command To server
+	ws.Command(gotil.WebSocketMessage{
+		Command: "cmd",
+		Message: "msg",
+	})
+}
 ```

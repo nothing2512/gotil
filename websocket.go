@@ -72,14 +72,11 @@ func (s *WebSocket) Server(secret, iv string) error {
 
 				if m.Command == "connect" {
 					uid := UUID()
-					fmt.Println("Connected: ", uid)
 					b, _ := json.Marshal(map[string]interface{}{
 						"id":      uid,
 						"token":   s.encryption.Encrypt(uid),
 						"command": "connect",
 					})
-					fmt.Println(uid)
-					fmt.Println(s.encryption.Encrypt(uid))
 					err := conn.WriteMessage(t, b)
 					s.clients[uid] = conn
 					if err != nil {
@@ -92,7 +89,6 @@ func (s *WebSocket) Server(secret, iv string) error {
 					token := m.Token
 					uid := s.encryption.Decrypt(token)
 					c := s.clients[uid]
-					fmt.Println("Disconnected")
 					c.WriteMessage(websocket.TextMessage, []byte("Disconnected"))
 					c.Close()
 					delete(s.clients, uid)
@@ -306,45 +302,4 @@ func (s *WebSocket) Send(to string, msg string) error {
 	}
 
 	return nil
-}
-
-func main() {
-	ws := NewWebSocket("0.0.0.0:8080")
-
-	// Server Handle Incoming Command
-	ws.OnCommand(func(m WebSocketMessage) {
-		fmt.Println(m.Command, m.Message)
-
-		// Server Send Reply Message
-		ws.Reply(m, "Reply Message")
-
-		// Server blast to all connection
-		ws.Blast("message")
-	})
-
-	// Start Server
-	err := ws.Server("00000000000000000000000000000000", "1111111111111111")
-	if err != nil {
-		panic(err)
-	}
-
-	// Start Client
-	err = ws.Client()
-	if err != nil {
-		panic(err)
-	}
-
-	// Client Handle Incoming Message
-	ws.OnMessage(func(m WebSocketMessage) {
-		fmt.Println(m.Message)
-	})
-
-	// Client Send Message To Other
-	ws.Send("target-uid", "Hello")
-
-	// Client Send Command To server
-	ws.Command(WebSocketMessage{
-		Command: "cmd",
-		Message: "msg",
-	})
 }
