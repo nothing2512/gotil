@@ -8,6 +8,7 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 )
 
+// parsing json file to struct / map / slice
 func ParseJSONFile(filename string, result any) error {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -21,6 +22,7 @@ func ParseJSONFile(filename string, result any) error {
 	return ParseStruct(&result, _result, "json")
 }
 
+// parsing csv file to struct / map / slice
 func ParseCSVFile(filename string, result any) error {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -46,6 +48,7 @@ func ParseCSVFile(filename string, result any) error {
 	return ParseStruct(&result, _result, "json")
 }
 
+// parsing excel file to struct / map / slice
 func ParseExcelFile(filename string, result any) error {
 	f, err := excelize.OpenFile(filename)
 	if err != nil {

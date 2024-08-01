@@ -8,9 +8,11 @@ import (
 	"html/template"
 	"mime/multipart"
 	"net/smtp"
+	"net/textproto"
 	"strings"
 )
 
+// mailer base model
 type Mailer struct {
 	email    string
 	password string
@@ -30,6 +32,7 @@ type Mailer struct {
 	from string
 }
 
+// crate new mailer
 func NewMailer(email, password, host, port string) (*Mailer, error) {
 	auth := smtp.PlainAuth("", email, password, host)
 	client, err := smtp.Dial(host + ":" + port)
@@ -59,20 +62,24 @@ func NewMailer(email, password, host, port string) (*Mailer, error) {
 	}, nil
 }
 
+// set sender email
 func (m *Mailer) From(from string) {
 	m.from = from
 }
 
+// set cc emails
 func (m *Mailer) Cc(emails ...string) {
 	m.cc = emails
 }
 
+// set bcc emails
 func (m *Mailer) Bcc(emails ...string) {
 	m.bcc = emails
 }
 
+// generate smtp headers
 func (m *Mailer) getHeaders() string {
-	headers := make(map[string]string)
+	headers := make(JSON)
 	headers["From"] = m.email
 	if m.from != "" {
 		headers["From"] = fmt.Sprintf("%v <%v>", m.from, m.email)
@@ -94,16 +101,19 @@ func (m *Mailer) getHeaders() string {
 	return h + ";\r\n\n"
 }
 
+// set mail subject
 func (m *Mailer) Subject(subject string) {
 	m.subject = subject
 }
 
+// set mail recipients
 func (m *Mailer) Recipients(emails ...string) {
 	m.recipients = emails
 }
 
+// set mail text content
 func (m *Mailer) SetText(text string) error {
-	part, err := m.writer.CreatePart(map[string][]string{
+	part, err := m.writer.CreatePart(textproto.MIMEHeader{
 		"Content-Type": {"text/plain; charset=\"utf-8\""},
 	})
 	if err != nil {
@@ -113,8 +123,9 @@ func (m *Mailer) SetText(text string) error {
 	return nil
 }
 
+// set mail html content
 func (m *Mailer) SetHTML(content string) error {
-	textPart, err := m.writer.CreatePart(map[string][]string{
+	textPart, err := m.writer.CreatePart(textproto.MIMEHeader{
 		"Content-Type": {"text/html; charset=\"utf-8\""},
 	})
 	if err != nil {
@@ -124,6 +135,7 @@ func (m *Mailer) SetHTML(content string) error {
 	return nil
 }
 
+// set mail html file with data
 func (m *Mailer) SetHTMLFile(file string, data any) error {
 
 	var body bytes.Buffer
@@ -133,7 +145,7 @@ func (m *Mailer) SetHTMLFile(file string, data any) error {
 	}
 	_ = t.Execute(&body, data)
 
-	textPart, err := m.writer.CreatePart(map[string][]string{
+	textPart, err := m.writer.CreatePart(textproto.MIMEHeader{
 		"Content-Type": {"text/html; charset=\"utf-8\""},
 	})
 	if err != nil {
@@ -143,8 +155,9 @@ func (m *Mailer) SetHTMLFile(file string, data any) error {
 	return nil
 }
 
+// attach file to mail
 func (m *Mailer) AttachFile(filename string, data []byte) error {
-	part, err := m.writer.CreatePart(map[string][]string{
+	part, err := m.writer.CreatePart(textproto.MIMEHeader{
 		"Content-Disposition":       {"attachment; filename=\"" + filename + "\""},
 		"Content-Type":              {"application/octet-stream"},
 		"Content-Transfer-Encoding": {"base64"},
@@ -161,6 +174,7 @@ func (m *Mailer) AttachFile(filename string, data []byte) error {
 	return nil
 }
 
+// send email
 func (m *Mailer) Send() error {
 	m.writer.Close()
 	headers := m.getHeaders()

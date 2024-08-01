@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// generate uuid
 func UUID() string {
 	uuid := make([]byte, 16)
 	_, err := rand.Read(uuid)

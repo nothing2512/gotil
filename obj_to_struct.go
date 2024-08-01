@@ -9,9 +9,7 @@ import (
 	"time"
 )
 
-// obj : *struct
-// data : JSON
-// tag : tagname (optional / "")
+// parse map data to struct with custom struct tag
 func ParseStruct(obj any, data any, tag string) error {
 	_v := reflect.ValueOf(obj)
 	_t := reflect.New(_v.Type().Elem()).Elem().Type()

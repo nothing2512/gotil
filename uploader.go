@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// http upload file
 func Upload(location string, file multipart.File, header *multipart.FileHeader) string {
 	exts := strings.Split(header.Filename, ".")
 	filename := UUID() + "." + exts[len(exts)-1]

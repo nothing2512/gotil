@@ -11,6 +11,8 @@ go get -u github.com/nothing2512/gotil
 - Encryption
 - File Uploader
 - HTTP Fetch
+- JSON Parse
+- JSON Stringify
 - Mailer
 - Object To Struct
 - Parse Csv File to Struct

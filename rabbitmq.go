@@ -7,11 +7,13 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// rabbit mq base model
 type RabbitMQ struct {
 	_qp *amqp.Connection
 	_ch *amqp.Channel
 }
 
+// create new rabbit mq instance
 func NewRabbitMQ(user, pass, host, port string) (*RabbitMQ, error) {
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://%v:%v@%v:%v/", user, pass, host, port))
 	if err != nil {
@@ -20,6 +22,7 @@ func NewRabbitMQ(user, pass, host, port string) (*RabbitMQ, error) {
 	return &RabbitMQ{_qp: conn}, nil
 }
 
+// create rabbit mq channel
 func (r *RabbitMQ) createChannel(name string) error {
 	if r._qp == nil {
 		return errors.New("Disconnected")
@@ -48,6 +51,7 @@ func (r *RabbitMQ) createChannel(name string) error {
 	return nil
 }
 
+// publish message in channel
 func (r *RabbitMQ) Publish(channel, data string) error {
 	if r._qp == nil {
 		return errors.New("Disconnected")
@@ -66,6 +70,7 @@ func (r *RabbitMQ) Publish(channel, data string) error {
 		})
 }
 
+// consume channel from client
 func (r *RabbitMQ) Consume(channel string, action func(data string)) error {
 	if r._qp == nil {
 		return errors.New("Disconnected")

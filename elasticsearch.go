@@ -10,14 +10,17 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
+// Elastic Search Table Interface
 type Elastable interface {
 	TableName() string
 }
 
+// Base Elastic Client Struct
 type ElasticClient struct {
 	_client *elastic.Client
 }
 
+// Create new Elastic Client
 func NewElasticSearch(uri string) (*ElasticClient, error) {
 	client, err := elastic.NewClient(elastic.SetURL(uri), elastic.SetSniff(false))
 	if err != nil {
@@ -26,6 +29,7 @@ func NewElasticSearch(uri string) (*ElasticClient, error) {
 	return &ElasticClient{client}, nil
 }
 
+// Delete Data By Model
 func (ec *ElasticClient) Delete(data Elastable) error {
 	body, err := ec.getObjValue(data)
 	if err != nil {
@@ -34,6 +38,7 @@ func (ec *ElasticClient) Delete(data Elastable) error {
 	return ec.DeleteById(data.TableName(), body["id"])
 }
 
+// Delete Data by Id
 func (ec *ElasticClient) DeleteById(table string, id any) error {
 	_, err := ec._client.Delete().
 		Index(table).
@@ -42,6 +47,7 @@ func (ec *ElasticClient) DeleteById(table string, id any) error {
 	return err
 }
 
+// Update Data by model
 func (ec *ElasticClient) Update(data Elastable) error {
 	body, err := ec.getObjValue(data)
 	if err != nil {
@@ -59,6 +65,7 @@ func (ec *ElasticClient) Update(data Elastable) error {
 	return err
 }
 
+// search data
 func (ec *ElasticClient) Search(obj any, table, value string, keys ...string) {
 	sr, _ := ec._client.Search().
 		Index(table).
@@ -74,6 +81,7 @@ func (ec *ElasticClient) Search(obj any, table, value string, keys ...string) {
 	_ = json.Unmarshal(b, obj)
 }
 
+// term builder
 func (ec *ElasticClient) term(value string, keys ...string) *elastic.BoolQuery {
 	var queries []elastic.Query
 	for _, v := range keys {
@@ -85,6 +93,7 @@ func (ec *ElasticClient) term(value string, keys ...string) *elastic.BoolQuery {
 	return elastic.NewBoolQuery().MinimumShouldMatch("1").Should(queries...)
 }
 
+// create new data
 func (ec *ElasticClient) Save(data Elastable) error {
 	if ec._client == nil {
 		return errors.New("Disconnected")
@@ -101,6 +110,7 @@ func (ec *ElasticClient) Save(data Elastable) error {
 	return err
 }
 
+// getting object data to JSON
 func (ec *ElasticClient) getObjValue(ptr any) (JSON, error) {
 
 	v := reflect.ValueOf(ptr)

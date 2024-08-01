@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// base http fetcher
 type HTTPFetcher struct {
 	Method  string
 	Url     string
@@ -14,6 +15,7 @@ type HTTPFetcher struct {
 	Headers JSON
 }
 
+// fetch http
 func (h HTTPFetcher) Fetch(result any) error {
 	var err error
 	var req *http.Request

@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// websocket base model
 type WebSocket struct {
 	// Server
 	clients map[string]*websocket.Conn
@@ -26,6 +27,7 @@ type WebSocket struct {
 	connection *websocket.Conn
 }
 
+// web socket base message model
 type WebSocketMessage struct {
 	Command string `json:"command"`
 	Message string `json:"message"`
@@ -72,7 +74,7 @@ func (s *WebSocket) Server(secret, iv string) error {
 
 				if m.Command == "connect" {
 					uid := UUID()
-					b, _ := json.Marshal(map[string]interface{}{
+					b, _ := json.Marshal(JSON{
 						"id":      uid,
 						"token":   s.encryption.Encrypt(uid),
 						"command": "connect",
