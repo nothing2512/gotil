@@ -51,7 +51,7 @@ func (s *WebSocket) Server(secret, iv string) error {
 		},
 	}
 
-	http.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/ws/connect", func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			log.Println(err)
@@ -104,7 +104,7 @@ func (s *WebSocket) Server(secret, iv string) error {
 			}
 		}
 	})
-	http.HandleFunc("/send", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/ws/send", func(w http.ResponseWriter, r *http.Request) {
 		var m WebSocketMessage
 		_ = json.NewDecoder(r.Body).Decode(&m)
 		if m.Command == "send" {
