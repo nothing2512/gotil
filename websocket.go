@@ -17,7 +17,7 @@ type WebSocket struct {
 	baseUri string
 
 	// Util
-	encryption Encryption
+	encryption *Encryption
 
 	// Client
 	id         string
@@ -40,7 +40,7 @@ func NewWebSocket(baseUri string) *WebSocket {
 
 // Start Server
 func (s *WebSocket) Server(secret, iv string) error {
-	s.encryption = *NewEncryption(secret, iv)
+	s.encryption = NewEncryption(secret, iv)
 	s.clients = make(map[string]*websocket.Conn)
 
 	upgrader := websocket.Upgrader{

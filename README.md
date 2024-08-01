@@ -172,8 +172,9 @@ func main() {
 ```
 
 ## Example Web Socket
+
+- server.go
 ```go
-// server.go
 package main
 
 import (
@@ -204,8 +205,8 @@ func main() {
 }
 ```
 
+- client.go
 ```go
-// client.go
 package main
 
 import (
@@ -236,5 +237,20 @@ func main() {
 		Command: "cmd",
 		Message: "msg",
 	})
+}
+```
+
+- Send trough HTTP
+```http
+POST /send HTTP/1.1
+Host: 0.0.0.0:8080
+Content-Type: application/json
+Content-Length: 237
+
+{
+    "token": "32097440af2b367064e37c43f08821daddb6ece61de2f4a8bb5a205bb75f3a9fdc27ea70",
+    "to": "5fe7d69e-9432-86a0-0585-fd7c11c39e71",
+    "command": "command|send",
+    "message": "{\"command\":\"cmd\",\"message\": \"message\"}"
 }
 ```
