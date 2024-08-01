@@ -13,9 +13,10 @@ import (
 // websocket base model
 type WebSocket struct {
 	// Server
-	clients map[string]*websocket.Conn
-	handle  func(m WebSocketMessage)
-	baseUri string
+	clients            map[string]*websocket.Conn
+	handle             func(m WebSocketMessage)
+	baseUri            string
+	authorizeNewClient func(token string) bool
 
 	// Util
 	encryption *Encryption
@@ -40,6 +41,11 @@ func NewWebSocket(baseUri string) *WebSocket {
 	return &WebSocket{baseUri: baseUri}
 }
 
+// Server Must Authorize New Client
+func (s *WebSocket) AuthorizeNewClient(authorizeNewClient func(token string) bool) {
+	s.authorizeNewClient = authorizeNewClient
+}
+
 // Start Server
 func (s *WebSocket) Server(secret, iv string) error {
 	s.encryption = NewEncryption(secret, iv)
@@ -58,6 +64,13 @@ func (s *WebSocket) Server(secret, iv string) error {
 		if err != nil {
 			log.Println(err)
 			return
+		}
+
+		if s.authorizeNewClient != nil {
+			if !s.authorizeNewClient(r.URL.Query().Get("token")) {
+				w.Write([]byte("Unauthorized"))
+				return
+			}
 		}
 
 		for {
